@@ -48,9 +48,9 @@ defmodule ETEA do
   def init do
     # Hack to make this work in escripts.
     path = try do
-             :filename.join(:code.priv_dir(:elcrc16), 'ctea_nif')
+             :filename.join(:code.priv_dir(:etea), 'etea_nif')
            rescue
-             FunctionClauseError -> System.get_env("CTEA_NIF_PATH") <> "ctea_nif"
+             FunctionClauseError -> System.get_env("ETEA_NIF_PATH") <> "etea_nif"
            end
     :ok = :erlang.load_nif(path, 0)
   end
@@ -58,16 +58,16 @@ defmodule ETEA do
   @doc """
   Encrypt a string using TEA
   """
-  @spec encrypt(binary, binary, int) :: binary
-  def encrypt(<<data :: binary>>, <<data :: binary>>, rounds \\ 32) do
+  @spec encrypt(binary, binary) :: binary
+  def encrypt(<<data :: binary>>, <<data :: binary>>) do
     raise "NIF eTEA.encrypt/1 not implemented"
   end
 
   @doc """
   Decrypt a string using TEA
   """
-  @spec decrypt(binary, binary, int) :: binary
-  def decrypt(<<data :: binary>>, <<data :: binary>>, rounds \\ 32) do
+  @spec decrypt(binary, binary) :: binary
+  def decrypt(<<data :: binary>>, <<data :: binary>>) do
     raise "NIF eTEA.decrypt/1 not implemented"
   end
 

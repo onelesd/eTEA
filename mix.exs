@@ -1,17 +1,17 @@
-defmodule Mix.Tasks.Compile.Elcrc16 do
-  @shortdoc "Compiles CRC"
+defmodule Mix.Tasks.Compile.ETEA do
+  @shortdoc "Compiles eTEA"
 
   def run(_) do
     File.mkdir("priv")
     {exec, args} = case :os.type do
       {:win32, _} ->
-        {"nmake", ["/F", "Makefile.win", "priv\\crc16_nif.dll"]}
+        {"nmake", ["/F", "Makefile.win", "priv\\etea_nif.dll"]}
       {:unix, :freebsd} ->
-        {"gmake", ["priv/crc16_nif.so"]}
+        {"gmake", ["priv/etea_nif.so"]}
       {:unix, :openbsd} ->
-        {"gmake", ["priv/crc16_nif.so"]}
+        {"gmake", ["priv/etea_nif.so"]}
       _ ->
-        {"make", ["priv/crc16_nif.so"]}
+        {"make", ["priv/etea_nif.so"]}
     end
 
     if System.find_executable(exec) do
@@ -47,13 +47,13 @@ defmodule Mix.Tasks.Compile.Elcrc16 do
     """
     Could not find the program `#{exec}`.
     You will need to install the C compiler `#{exec}` to be able to build
-    Elcrc16.
+    ETEA.
     """
   end
 
   defp build_message do
     """
-    Could not compile Elcrc16.
+    Could not compile ETEA.
     Please make sure that you are using Erlang / OTP version 17.0 or later
     and that you have a C compiler installed.
     """
@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Compile.Elcrc16 do
     """
     One option is to install a recent version of Visual Studio (the
     free Community edition will be enough for this task). Then try running
-    `mix deps.compile elcrc16` from the `Developer Command Prompt`.
+    `mix deps.compile ETEA` from the `Developer Command Prompt`.
     If you are using 64-bit erlang, you might need to run the command
     `vcvarsall.bat amd64` in the Visual Studio {version}\VC directory
     before running `mix deps.compile`.
@@ -91,16 +91,16 @@ defmodule Mix.Tasks.Compile.Elcrc16 do
   end
 end
 
-defmodule Elcrc16.Mixfile do
+defmodule ETEA.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :elcrc16,
+    [app: :etea,
      version: "0.1.0",
      elixir: ">= 1.0.0 and < 2.0.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     compilers: [:Elcrc16, :elixir, :app],
+     compilers: [:ETEA, :elixir, :app],
      deps: deps(),
      description: description(),
      package: package()
@@ -117,7 +117,7 @@ defmodule Elcrc16.Mixfile do
 
   defp description do
     """
-    A library used to calculate CRC checksums for binary data
+    A library used to encrypt/decrypt data using the TEA algorithm.
     """
   end
 
@@ -126,7 +126,7 @@ defmodule Elcrc16.Mixfile do
       files: ["lib", "src", "mix.exs", "Makefile*", "README.md", "LICENSE"],
       maintainers: ["Michael Martin"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/building39/elcrc16"}
+      links: %{"GitHub" => "https://github.com/instantchannel/eTEA"}
     ]
   end
 

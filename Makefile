@@ -13,19 +13,19 @@ ifneq ($(OS),Windows_NT)
 endif
 
 NIF_SRC=\
-	src/crc.c\
-	src/crc16_nif.c
+	src/_tea.c\
+	src/etea_nif.c
 
-all: crc
+all: etea
 
-crc:
+etea:
 	$(MIX) compile
 
-priv/crc16_nif.so: $(NIF_SRC)
+priv/etea_nif.so: $(NIF_SRC)
 	$(CC) $(CFLAGS) -shared $(LDFLAGS) -o $@ $(NIF_SRC)
 
 clean:
 	$(MIX) clean
-	rm -f priv/crc.so src/*.o
+	rm -f priv/etea.so src/*.o
 
-.PHONY: all crc clean
+.PHONY: all etea clean

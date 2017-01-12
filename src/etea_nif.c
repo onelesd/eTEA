@@ -23,20 +23,24 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     unsigned char *decrypted_data = NULL;
     unsigned char *returned_data = NULL;
     unsigned char *key = NULL;
+    struct tea *tea_obj = NULL;
     if (argc !=2 ||
         !enif_inspect_binary(env, argv[0], &binary_key) ||
         !enif_inspect_binary(env, argv[1], &binary_data) ) {
         return enif_make_badarg(env);
     }
     datasize = binary_data.size;
-    encrypted_data = (unsigned char *)malloc(datasize)
-    decrypted_data = binary_data.data;
-    tea = tea_setup(key, ROUNDS);
-    tea_crypt(tea, decrypted_data, encrypted_data, ENCRYPT);
-    returned_data = enif_make_string_len(encrypted_data, datasize, ERL_NIF_LATIN1);
-    tea_free(tea);
-    free(encrypted_data)
-    return enif_make_int(env, returned_data);
+    encrypted_data = (unsigned char *)malloc(datasize);
+    decrypted_data = (unsigned char *)binary_data.data;
+    tea_obj = tea_setup(key, ROUNDS);
+    tea_crypt(tea_obj, decrypted_data, encrypted_data, ENCRYPT);
+    returned_data = enif_make_string_len(env,
+                                         (char *)encrypted_data,
+                                         datasize,
+                                         ERL_NIF_LATIN1);
+    tea_free(tea_obj);
+    free(encrypted_data);
+    return returned_data;
 }
 
 static ERL_NIF_TERM decrypt(ErlNifEnv* env,
@@ -49,25 +53,29 @@ static ERL_NIF_TERM decrypt(ErlNifEnv* env,
     unsigned char *decrypted_data = NULL;
     unsigned char *returned_data = NULL;
     unsigned char *key = NULL;
+    struct tea *tea_obj = NULL;
     if (argc !=2 ||
         !enif_inspect_binary(env, argv[0], &binary_key) ||
         !enif_inspect_binary(env, argv[1], &binary_data) ) {
         return enif_make_badarg(env);
     }
     datasize = binary_data.size;
-    decrypted_data = (unsigned char *)malloc(datasize)
-    encrypted_data = binary_data.data;
-    tea = tea_setup(key, ROUNDS);
-    tea_crypt(tea, encrypted_data, decrypted_data, ENCRYPT);
-    returned_data = enif_make_string_len(decrypted_data, datasize, ERL_NIF_LATIN1);
-    tea_free(tea);
-    free(decrypted_data)
-    return enif_make_int(env, returned_data);
+    decrypted_data = (unsigned char *)malloc(datasize);
+    encrypted_data = (unsigned char *)binary_data.data;
+    tea_obj = tea_setup(key, ROUNDS);
+    tea_crypt(tea_obj, encrypted_data, decrypted_data, ENCRYPT);
+    returned_data = enif_make_string_len(env,
+                                         (char *)decrypted_data,
+                                         datasize,
+                                         ERL_NIF_LATIN1);
+    tea_free(tea_obj);
+    free(decrypted_data);
+    return returned_data;
 }
 
-static ErlNifFunc nif_funcs[] =    enif_get_int(env, argv[2], &rounds);
+static ErlNifFunc nif_funcs[] =
 {
-    {"encrypt", 1, encrypt},
-    {"decrypt", 1, decrypt}
+    {"encrypt", 2, encrypt},
+    {"decrypt", 2, decrypt}
 };
-ERL_NIF_INIT(Elixir.Elcrc16, nif_funcs, NULL, NULL, NULL, NULL)
+ERL_NIF_INIT(Elixir.ETEA, nif_funcs, NULL, NULL, NULL, NULL)
