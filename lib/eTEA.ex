@@ -7,36 +7,9 @@ defmodule ETEA do
   and is described at
   <http://www.ftp.cl.cam.ac.uk/ftp/papers/djw-rmn/djw-rmn-tea.html>.
 
-  This module implements TEA encryption. It supports the Crypt::CBC
-  interface, with the following functions.
+  This module implements TEA encryption.
 
-  ## Functions
-
-  - blocksize
-
-  Returns the size (in bytes) of the block (8, in this case).
-
-  - keysize
-
-  Returns the size (in bytes) of the key (16, in this case).
-
-  - new($key, $rounds)
-
-  This creates a new Crypt::TEA object with the specified key. The
-  optional rounds parameter specifies the number of rounds of encryption
-  to perform, and defaults to 32.
-
-  - encrypt($data)
-
-  Encrypts blocksize() bytes of $data and returns the corresponding
-  ciphertext.
-
-  - decrypt($data)
-
-  Decrypts blocksize() bytes of $data and returns the corresponding
-  plaintext.
-
-  ## SEE ALSO
+    ## SEE ALSO
 
   <http://www.vader.brad.ac.uk/tea/tea.shtml>
 
@@ -83,42 +56,18 @@ defmodule ETEA do
   end
 
   @doc """
-  Return the blocksize in bytes (always 8)
-  """
-  @spec blocksize() :: integer
-  def blocksize() do
-    raise "NIF eTEA.blocksize/0 not implemented"
-  end
-
-  @doc """
-  Return the keysize in bytes (always 16)
-  """
-  @spec keysize() :: integer
-  def keysize() do
-    raise "NIF eTEA.keysize/0 not implemented"
-  end
-
-  @doc """
-  Return a new TEA object
-  """
-  @spec new(<<key :: binary>>, integer) :: integer
-  def new() do
-    raise "NIF eTEA.new/2 not implemented"
-  end
-
-  @doc """
   Encrypt a string using TEA
   """
-  @spec encrypt(binary) :: binary
-  def encrypt(<<data :: binary>>) do
+  @spec encrypt(binary, binary, int) :: binary
+  def encrypt(<<data :: binary>>, <<data :: binary>>, rounds \\ 32) do
     raise "NIF eTEA.encrypt/1 not implemented"
   end
 
   @doc """
   Decrypt a string using TEA
   """
-  @spec decrypt(binary) :: binary
-  def decrypt(<<data :: binary>>) do
+  @spec decrypt(binary, binary, int) :: binary
+  def decrypt(<<data :: binary>>, <<data :: binary>>, rounds \\ 32) do
     raise "NIF eTEA.decrypt/1 not implemented"
   end
 
