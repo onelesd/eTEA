@@ -24,6 +24,11 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     unsigned char *returned_data = NULL;
     unsigned char *key = NULL;
     struct tea *tea_obj = NULL;
+    return enif_make_int(env, crcFast(data, data_size));
+    /*
+    FILE *log = fopen("/tmp/etea.log", "w");
+    fprintf(log, "Initializing the nif\n")
+    fflush(log);
     if (argc !=2 ||
         !enif_inspect_binary(env, argv[0], &binary_key) ||
         !enif_inspect_binary(env, argv[1], &binary_data) ) {
@@ -32,6 +37,8 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     datasize = binary_data.size;
     encrypted_data = (unsigned char *)malloc(datasize);
     decrypted_data = (unsigned char *)binary_data.data;
+    fprintf(log, "Datasize: %d\n", datasize); fflush(log);
+    fprintf(log, "Raw data: %s\n", decrypted_data); fflush(log);
     tea_obj = tea_setup(key, ROUNDS);
     tea_crypt(tea_obj, decrypted_data, encrypted_data, ENCRYPT);
     returned_data = enif_make_string_len(env,
@@ -41,6 +48,7 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     tea_free(tea_obj);
     free(encrypted_data);
     return returned_data;
+    */
 }
 
 static ERL_NIF_TERM decrypt(ErlNifEnv* env,
