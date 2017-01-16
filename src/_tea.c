@@ -3,7 +3,20 @@
  * Copyright 2001 Abhijit Menon-Sen <ams@wiw.org>
  */
 
+#include <stdio.h>
+
+#if defined(__APPLE__)
+#  define COMMON_DIGEST_FOR_OPENSSL
+#  include <CommonCrypto/CommonDigest.h>
+#  define SHA1 CC_SHA1
+#else
+#  include <openssl/md5.h>
+#endif
+
 #include "tea.h"
+#include "memdump.h"
+
+unsigned char *str2md5(unsigned char *i, int l);
 
 #define strtonl(s) (uint32_t)(*(s)|*(s+1)<<8|*(s+2)<<16|*(s+3)<<24)
 #define nltostr(l, s) \
@@ -14,6 +27,10 @@
         *(s+3)=(unsigned char)((l) >> 24);  \
     } while (0)
 
+int blockSize(void)
+{
+    printf("In tea->blockSize");
+    return 8; }
 /* TEA is a 64-bit symmetric block cipher with a 128-bit key, developed
    by David J. Wheeler and Roger M. Needham, and described in their
    paper at <URL:http://www.cl.cam.ac.uk/ftp/users/djw3/tea.ps>.
@@ -24,16 +41,19 @@
 struct tea *tea_setup(unsigned char *key, int rounds)
 {
     struct tea *self = malloc(sizeof(struct tea));
+    printf("Key: %s\n\r", key);
+    printf("Rounds: %d\n\r", rounds);
+    unsigned char *key_digest = str2md5(key, 16);
 
     if (self) {
         self->rounds = rounds;
 
-        self->key[0] = strtonl(key);
-        self->key[1] = strtonl(key+4);
-        self->key[2] = strtonl(key+8);
-        self->key[3] = strtonl(key+12);
+        self->key[0] = strtonl(key_digest);
+        self->key[1] = strtonl(key_digest+4);
+        self->key[2] = strtonl(key_digest+8);
+        self->key[3] = strtonl(key_digest+12);
     }
-
+    free(key_digest);
     return self;
 }
 
@@ -41,7 +61,19 @@ void tea_free(struct tea *self)
 {
     free(self);
 }
-
+void tea_encryptBlock(struct tea *self,
+                  unsigned char * input,
+                  unsigned char * output)
+{
+  memdump(input, 32, "Padded block:");
+  tea_crypt(self, input, output, 0);
+}
+void tea_decryptBlock(struct tea *self,
+                  unsigned char * input,
+                  unsigned char * output)
+{
+  tea_crypt(self, input, output, 1);
+}
 void tea_crypt(struct tea *self,
                unsigned char *input, unsigned char *output,
                int decrypt)
@@ -52,6 +84,10 @@ void tea_crypt(struct tea *self,
 
     k = self->key;
     rounds = self->rounds;
+
+    memdump(self, sizeof(struct tea), "Context:");
+    printf("input: %s\n\r", input);
+    memdump(input, 8, "Input block:");
 
     y = strtonl(input);
     z = strtonl(input+4);
@@ -73,4 +109,28 @@ void tea_crypt(struct tea *self,
 
     nltostr(y, output);
     nltostr(z, output+4);
+    memdump(output, 8, "Output block:");
+    printf("output: %s\n\r", output); fflush(stdout);
+}
+
+unsigned char *str2md5(unsigned char *str, int length) {
+    int n;
+    MD5_CTX c;
+    unsigned char *digest = (unsigned char *)malloc(length);
+
+    MD5_Init(&c);
+
+    while (length > 0) {
+        if (length > 512) {
+            MD5_Update(&c, str, 512);
+        } else {
+            MD5_Update(&c, str, length);
+        }
+        length -= 512;
+        str += 512;
+    }
+
+    MD5_Final(digest, &c);
+
+    return digest;
 }

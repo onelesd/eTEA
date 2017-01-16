@@ -12,9 +12,14 @@ ifneq ($(OS),Windows_NT)
 	endif
 endif
 
-NIF_SRC=\
-	src/_tea.c\
-	src/etea_nif.c
+NIF_SRC= \
+	src/_tea.c \
+	src/memdump.c \
+	src/cipher_mode_cbc.c \
+	src/etea_nif.c \
+	src/base64.c
+
+LDFLAGS += -lcrypto -lssl
 
 all: etea
 
@@ -22,7 +27,7 @@ etea:
 	$(MIX) compile
 
 priv/etea_nif.so: $(NIF_SRC)
-	$(CC) $(CFLAGS) -shared $(LDFLAGS) -o $@ $(NIF_SRC)
+	$(CC) $(CFLAGS) -o $@ $(NIF_SRC) -shared $(LDFLAGS)
 
 clean:
 	$(MIX) clean

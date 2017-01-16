@@ -15,6 +15,12 @@ struct tea {
 };
 
 struct tea *tea_setup(unsigned char *key, int rounds);
+void tea_decryptBlock(struct tea *self,
+                  unsigned char *input,
+                  unsigned char *output);
+void tea_encryptBlock(struct tea *self,
+                  unsigned char *input,
+                  unsigned char *output);
 void tea_free(struct tea *self);
 void tea_crypt(struct tea *self,
                unsigned char *input, unsigned char *output,
