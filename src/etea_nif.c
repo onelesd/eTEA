@@ -61,9 +61,7 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
         return enif_make_badarg(env);
     }
 
-    /* Initialize some stack variables. */
-    memset(iv, 0, sizeof(iv));
-    memset(key, 0, sizeof(key));
+
 
     /* Get the options from the options map.
        A minimum of 2 options are required:
@@ -80,16 +78,21 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     enif_inspect_binary(env, bk, &binary_key);
     enif_inspect_binary(env, bi, &binary_iv);
 
+    /* Set the initialization vector and the key. */
+    memset(iv, 0, sizeof(iv));
+    memset(key, 0, sizeof(key));
     memcpy(iv, binary_iv.data, binary_iv.size);
     memcpy(key, binary_key.data, binary_key.size);
 
-    /* Allocate and initialize some more stack variables. */
+    /* Calculate the encrypted data size, with padding. */
     datasize = ((binary_data.size + 7) & ~7);
     if (datasize == binary_data.size) {
       datasize += 8;
     } else {
       padchars = datasize - binary_data.size;
     }
+
+    /* Allocate storage for the data, both encrypted and not. */
     encrypted_data = (unsigned char *)malloc(datasize);
     decrypted_data = (unsigned char *)malloc(datasize);
     memset(decrypted_data, padchars, datasize);
