@@ -42,11 +42,11 @@
 #include "crypto.h"
 #include "cipher_mode_cbc.h"
 #include "debug.h"
-#include "memdump.h"
 
 //Check crypto library configuration
 #if (CBC_SUPPORT == ENABLED)
 
+CipherAlgo *new
 
 /**
  * @brief CBC encryption
@@ -65,16 +65,9 @@ error_t cbcEncrypt(const CipherAlgo *cipher, void *context,
    size_t i;
 
    //CBC mode operates in a block-by-block fashion
-   printf("In cbcEncrypt\n\r");
-   printf("Plaintext: %s\n\r", p);
-   printf("Length: %d\n\r", length);
-   printf("blocksize: %d\n\r", cipher->blockSize);
-   printf("IV: %s\n\r", iv);
-   memdump(context, 32, "Context:");
    while(length >= cipher->blockSize)
    {
       //XOR input block with IV contents
-      memdump(p, 8, "New input buffer:");
       for(i = 0; i < cipher->blockSize; i++)
          c[i] = p[i] ^ iv[i];
 
@@ -89,7 +82,6 @@ error_t cbcEncrypt(const CipherAlgo *cipher, void *context,
       p += cipher->blockSize;
       c += cipher->blockSize;
       length -= cipher->blockSize;
-      memdump(c, 8, "Encrypted block:"); fflush(stdout);
    }
 
    //The plaintext must be a multiple of the block size

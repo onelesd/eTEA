@@ -5,7 +5,6 @@
 #include "cipher_mode_cbc.h"
 #include "tea.h"
 #include "erl_nif.h"
-#include "memdump.h"
 #include "crypto.h"
 
 #define ENCRYPT 0
@@ -60,11 +59,7 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     tea_obj = tea_setup(binary_key.data, ROUNDS);
     /* tea_crypt(tea_obj, decrypted_data, encrypted_data, ENCRYPT); */
     cbcEncrypt(&cipher, tea_obj, iv, decrypted_data, encrypted_data, datasize);
-    memdump(encrypted_data, 16, "Encrypted:");
     out_data = base64_encode(encrypted_data, datasize, &outlen);
-    printf("\nEncrypted data: %s\n\r", out_data); fflush(stdout);
-    printf("\nEncrypted data length: %d\n\r", outlen);
-    fflush(stdout);
 
     returned_data = enif_make_string_len(env,
                                          (char *)out_data,

@@ -14,7 +14,6 @@
 #endif
 
 #include "tea.h"
-#include "memdump.h"
 
 unsigned char *str2md5(unsigned char *i, int l);
 
@@ -29,7 +28,6 @@ unsigned char *str2md5(unsigned char *i, int l);
 
 int blockSize(void)
 {
-    printf("In tea->blockSize");
     return 8; }
 /* TEA is a 64-bit symmetric block cipher with a 128-bit key, developed
    by David J. Wheeler and Roger M. Needham, and described in their
@@ -41,8 +39,6 @@ int blockSize(void)
 struct tea *tea_setup(unsigned char *key, int rounds)
 {
     struct tea *self = malloc(sizeof(struct tea));
-    printf("Key: %s\n\r", key);
-    printf("Rounds: %d\n\r", rounds);
     unsigned char *key_digest = str2md5(key, 16);
 
     if (self) {
@@ -65,7 +61,6 @@ void tea_encryptBlock(struct tea *self,
                   unsigned char * input,
                   unsigned char * output)
 {
-  memdump(input, 32, "Padded block:");
   tea_crypt(self, input, output, 0);
 }
 void tea_decryptBlock(struct tea *self,
@@ -84,10 +79,6 @@ void tea_crypt(struct tea *self,
 
     k = self->key;
     rounds = self->rounds;
-
-    memdump(self, sizeof(struct tea), "Context:");
-    printf("input: %s\n\r", input);
-    memdump(input, 8, "Input block:");
 
     y = strtonl(input);
     z = strtonl(input+4);
@@ -109,8 +100,6 @@ void tea_crypt(struct tea *self,
 
     nltostr(y, output);
     nltostr(z, output+4);
-    memdump(output, 8, "Output block:");
-    printf("output: %s\n\r", output); fflush(stdout);
 }
 
 unsigned char *str2md5(unsigned char *str, int length) {
