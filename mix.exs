@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.Compile.ETEA do
-  @shortdoc "Compiles eTEA"
 
   def run(_) do
     File.mkdir("priv")

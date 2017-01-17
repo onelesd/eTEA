@@ -58,8 +58,8 @@ defmodule ETEA do
   @doc """
   Encrypt a string using TEA
   """
-  @spec encrypt(binary, binary) :: binary
-  def encrypt(<<data :: binary>>, <<data :: binary>>) do
+  @spec encrypt(binary, map) :: binary
+  def encrypt(<<data :: binary>>, map) do
     raise "NIF eTEA.encrypt/1 not implemented"
   end
 

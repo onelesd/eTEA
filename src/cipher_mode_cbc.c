@@ -46,8 +46,6 @@
 //Check crypto library configuration
 #if (CBC_SUPPORT == ENABLED)
 
-CipherAlgo *new
-
 /**
  * @brief CBC encryption
  * @param[in] cipher Cipher algorithm

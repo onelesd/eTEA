@@ -15,6 +15,7 @@ struct tea {
 };
 
 struct tea *tea_setup(unsigned char *key, int rounds);
+int tea_blockSize(void);
 void tea_decryptBlock(struct tea *self,
                   unsigned char *input,
                   unsigned char *output);

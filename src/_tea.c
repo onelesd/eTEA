@@ -26,7 +26,7 @@ unsigned char *str2md5(unsigned char *i, int l);
         *(s+3)=(unsigned char)((l) >> 24);  \
     } while (0)
 
-int blockSize(void)
+int tea_blockSize(void)
 {
     return 8; }
 /* TEA is a 64-bit symmetric block cipher with a 128-bit key, developed
