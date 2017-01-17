@@ -65,17 +65,16 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     printf("\nEncrypted data: %s\n\r", out_data); fflush(stdout);
     printf("\nEncrypted data length: %d\n\r", outlen);
     fflush(stdout);
-    free(decrypted_data);
-    return enif_make_int(env, 69);
-    /*
+
     returned_data = enif_make_string_len(env,
-                                         (char *)encrypted_data,
-                                         datasize,
+                                         (char *)out_data,
+                                         outlen,
                                          ERL_NIF_LATIN1);
     tea_free(tea_obj);
+    free(decrypted_data);
     free(encrypted_data);
     return returned_data;
-    */
+
 }
 
 static ERL_NIF_TERM decrypt(ErlNifEnv* env,
