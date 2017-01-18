@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "base64.h"
 #include "cipher_mode_cbc.h"
 #include "tea.h"
 #include "erl_nif.h"
@@ -20,16 +19,14 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
 {
     ERL_NIF_TERM bk, bi;
 
-    ErlNifBinary binary_key, binary_data, binary_iv;
+    ErlNifBinary binary_key, binary_data, binary_iv, binary_encrypted;
 
     size_t datalen = 0;
-    size_t outlen = 0;
     int padchars = PADCHARS;
 
     unsigned char *encrypted_data = NULL;
     unsigned char *decrypted_data = NULL;
-    unsigned char *returned_data = NULL;
-    unsigned char *out_data = NULL;
+    ERL_NIF_TERM returned_data;
 
     struct tea *tea_context = NULL;
 
@@ -74,11 +71,19 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
       padchars = datalen - binary_data.size;
     }
 
+    /* Allocate a new binary for the encrypted data. */
+    if (!enif_alloc_binary(datalen, &binary_encrypted)) {
+      return enif_make_badarg(env);
+    }
+
     /* Allocate storage for the data, both encrypted and not. */
-    encrypted_data = (unsigned char *)malloc(datalen);
+    binary_encrypted.data = (unsigned char *)malloc(datalen);
+    binary_encrypted.size = datalen;
     decrypted_data = (unsigned char *)malloc(datalen);
     memset(decrypted_data, padchars, datalen);
     memcpy(decrypted_data, binary_data.data, (binary_data.size));
+
+
 
     /* Initialize the CBC encryption algorithm interface. */
     cipher.name = "TEA";
@@ -93,20 +98,13 @@ static ERL_NIF_TERM encrypt(ErlNifEnv* env,
     tea_context = tea_setup(binary_key.data, ROUNDS);
 
     /* Encrypt the data. */
-    cbcEncrypt(&cipher, tea_context, iv, decrypted_data, encrypted_data, datalen);
+    cbcEncrypt(&cipher, tea_context, iv, decrypted_data, binary_encrypted.data, datalen);
 
-    /* Base64 encode the encrypted data for return. */
-    out_data = base64_encode(encrypted_data, datalen, &outlen);
-
-    returned_data = enif_make_string_len(env,
-                                         (char *)out_data,
-                                         outlen,
-                                         ERL_NIF_LATIN1);
+    returned_data = enif_make_string_len(env, binary_encrypted.data, datalen, ERL_NIF_LATIN1);
 
     /* Free allocated storage. */
     tea_free(tea_context);
     free(decrypted_data);
-    free(encrypted_data);
 
     /* Return the encrypted data. */
     return returned_data;
@@ -125,7 +123,6 @@ static ERL_NIF_TERM decrypt(ErlNifEnv* env,
     size_t outlen = 0;
 
     unsigned char *encrypted_data = NULL;
-    unsigned char *decoded_data = NULL;
     unsigned char *decrypted_data = NULL;
     unsigned char *returned_data = NULL;
 
@@ -135,8 +132,6 @@ static ERL_NIF_TERM decrypt(ErlNifEnv* env,
     unsigned char key[17];
 
     CipherAlgo cipher;
-
-    printf("Entering decrypt\n\r"); fflush(stdout);
 
     /* Check the incoming paramaters. */
     if (argc != 2 ||
@@ -197,36 +192,8 @@ static ERL_NIF_TERM decrypt(ErlNifEnv* env,
     /* Allocate storage for the decrypted data. */
     decrypted_data = (unsigned char *)malloc(datalen);
 
-    /* Base64 decode the incoming data.
-       Pad with "=" if length is not a multiple of 3. */
-    if (encrypted_data[strlen(encrypted_data) - 1] == '\n') {
-      encrypted_data[strlen(encrypted_data) - 1] = 0; /* lop off newline */
-    }
-    switch (strlen(encrypted_data) % 3) {
-      case 1:
-        encrypted_data = realloc(encrypted_data, strlen(encrypted_data) + 3);
-        encrypted_data[strlen(encrypted_data)] = '=';
-        encrypted_data[strlen(encrypted_data) + 1] = '=';
-        encrypted_data[strlen(encrypted_data) + 2] = 0;
-        break;
-      case 2:
-        encrypted_data = realloc(encrypted_data, strlen(encrypted_data) + 2);
-        encrypted_data[strlen(encrypted_data)] = '=';
-        encrypted_data[strlen(encrypted_data) + 1] = 0;
-        break;
-      default:
-        break;
-    }
-    memdump(encrypted_data, strlen(encrypted_data), "decoding:");
-    decoded_data = base64_decode(encrypted_data, strlen(encrypted_data), &datalen);
-    printf("Decoded data length: %d\n\r", datalen); fflush(stdout);
-    memdump(decoded_data, datalen, "decoded data"); fflush(stdout);
-
     /* Decrypt the data. */
-    cbcDecrypt(&cipher, tea_context, iv, decoded_data, decrypted_data, datalen);
-    memdump(decrypted_data, 32, "decrypted_data");
-    printf("datalen: %d\n\r", datalen);
-
+    cbcDecrypt(&cipher, tea_context, iv, encrypted_data, decrypted_data, datalen);
 
     /* Depad if necessary. */
     int pad_len = decrypted_data[datalen - 1];
@@ -235,18 +202,16 @@ static ERL_NIF_TERM decrypt(ErlNifEnv* env,
       decrypted_data[datalen] = 0;
     }
 
-    printf("returning data %d bytes long: %s\n\r", strlen(decrypted_data), decrypted_data); fflush(stdout);
     /* Prep the decrypted data for return. */
     returned_data = enif_make_string_len(env,
                                          (char *)decrypted_data,
-                                         strlen(decrypted_data),
+                                         datalen,
                                          ERL_NIF_LATIN1);
 
     /* Free allocated resources. */
     free(tea_context);
     free(encrypted_data);
     free(decrypted_data);
-    free(decoded_data);
 
     return returned_data;
 }
