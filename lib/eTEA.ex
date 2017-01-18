@@ -40,7 +40,7 @@ defmodule ETEA do
   This software is distributed under the terms of the MIT License
   """
 
-  @on_load {:init, 0}
+  # @on_load {:init, 0}
 
   @doc """
   Initilizes the module by loading NIFs
