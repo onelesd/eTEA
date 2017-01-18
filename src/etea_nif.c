@@ -224,14 +224,18 @@ static ERL_NIF_TERM decrypt(ErlNifEnv* env,
 
     /* Decrypt the data. */
     cbcDecrypt(&cipher, tea_context, iv, decoded_data, decrypted_data, datalen);
-    memdump(decrypted_data, datalen, "decrypted_data");
+    memdump(decrypted_data, 32, "decrypted_data");
+    printf("datalen: %d\n\r", datalen);
+
 
     /* Depad if necessary. */
     int pad_len = decrypted_data[datalen - 1];
     if (pad_len < 9) {
-      decrypted_data[pad_len] = 0;
+      datalen -= pad_len;
+      decrypted_data[datalen] = 0;
     }
 
+    printf("returning data %d bytes long: %s\n\r", strlen(decrypted_data), decrypted_data); fflush(stdout);
     /* Prep the decrypted data for return. */
     returned_data = enif_make_string_len(env,
                                          (char *)decrypted_data,
